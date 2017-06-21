@@ -1,0 +1,142 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#define N 100
+/**基本排序算法
+*   选择排序
+*   冒泡排序
+*   插入排序
+*   希尔排序
+**高级排序算法
+*   快速排序
+*/
+/*第一种选择排序*/
+void select_sort(int a[],int star,int end)
+{
+    int i,j,tmp;
+    for(i=0;i<N-1;i++){
+        int k=i;
+        for(j=i+1;j<N;j++){
+            if(a[j]<a[k]){
+                k=j;
+            }
+        }
+        if(k!=i){
+            tmp=a[k];
+            a[k]=a[i];
+            a[i]=tmp;
+        }
+    }
+}
+/*冒泡排序*/
+void mp_sort(int a[],int star,int end)
+{
+    int i,j,tmp;
+    int flg=1;//设置观察哨
+    for(i=0;i<N-1&&flg==1;i++){//对冒泡排序进行该进
+            /*如果在一次排序排序中，所有元素已经有序
+            *则不会发生元素交换
+            *可以根据是否发生元素交换来判断是否已经有序
+            */
+        flg=0;
+        for(j=0;j<N-1;j++){
+            if(a[j]>a[j+1]){
+                tmp=a[j];
+                a[j]=a[j+1];
+                a[j+1]=tmp;
+                flg=1;//如果发生了交换，则该序列还不是已经有序的
+            }
+        }
+    }
+}
+/*插入排序*/
+void insert_sort(int a[],int star,int end)
+{
+    int i,j,tmp;
+    for(i=end;i>=1;i--){
+        //将最小的元素放在第一个
+        if(a[i]<a[i-1]){
+            tmp=a[i];
+            a[i]=a[i-1];
+            a[i-1]=tmp;
+        }
+    }
+    for(i=star+2;i<=end;i++)
+    {
+        tmp=a[i];
+        j=i;
+        while(tmp<a[j-1]){
+            a[j]=a[j-1];
+            j--;
+        }
+        a[j]=tmp;
+    }
+}
+/*希尔排序*/
+void shell_sort(int a[],int star,int end)
+{
+    int i,j,tmp,h=1;
+    while(h<=N/3)
+        h=h*3+1;
+        while(h>=1){
+                for(i=h;i<=end;i++){
+                    for(j=i;j>=h&&a[j]<a[j-h];j-=h){
+                        tmp=a[j];
+                        a[j]=a[j-h];
+                        a[j-h]=tmp;
+                    }
+                }
+                h=h/3;
+        }
+}
+/*快速排序*/
+void swap(int a[],int x,int y)
+{
+    int t;
+    t=a[x];
+    a[x]=a[y];
+    a[y]=t;
+}
+void quick_sort(int a[],int star,int end)
+{
+    if(star>=end)
+        return;
+    int left,right;
+    int mid=a[end];
+    left=star;
+    right=end-1;
+    while(left<right){
+        while(a[left]<mid&&left<right)
+            left++;
+        while(a[right]>=mid&&left<right)
+            right--;
+        swap(a,left,right);
+    }
+    if(a[left]>=a[end])
+        swap(a,left,end);
+    else
+        left++;
+    quick_sort(a,star,left-1);
+    quick_sort(a,left+1,end);
+}
+int main()//测试函数
+{
+    int num[N],i;
+    srand(time(NULL));
+    for(i=0;i<N;i++){
+        num[i]=rand()%100+1;
+    }
+    for(i=0;i<N;i++){
+        printf("%d ",num[i]);
+    }
+    printf("\n");
+    //select_sort(num,0,N-1);//测试选择排序
+    //mp_sort(num,0,N-1);//测试冒泡排序
+    //insert_sort(num,0,N-1);//测试插入排序
+    //shell_sort(num,0,N-1);//测试希尔排序
+    quick_sort(num,0,N-1);
+    for(i=0;i<N;i++){
+        printf("%d ",num[i]);
+    }
+    return 0;
+}
