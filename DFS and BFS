@@ -1,0 +1,303 @@
+#include <stdio.h>
+#include <stdlib.h>
+#define MAX_VERTEX 26
+#define MAX_Weight 27289
+#define MAX_SIZE 20
+
+
+typedef struct
+ {
+     int elem[MAX_SIZE];//数组
+     int front,rear;//队头和队尾
+ }CircQueue;
+ //初始化循环队列
+ void Init_CirCqueue(CircQueue* Q)
+ {
+     Q->front=Q->rear=0;
+ }
+ //进队
+ void EnQueue(CircQueue* Q,int x)
+ {
+     Q->elem[Q->rear]=x;
+     Q->rear=(Q->rear+1)%MAX_SIZE;
+ }
+ //出队
+ int DeQueue(CircQueue* Q)
+ {
+     int k;
+     k=Q->elem[Q->front];
+     Q->front=(Q->front+1)%MAX_SIZE;
+     return k;
+ }
+ //判断队列为空
+ int IsEmpty(CircQueue* Q)
+ {
+     if((Q->front-Q->rear)==0)
+        return 1;
+     else
+        return 0;
+ }
+
+
+typedef char Vtype;    //顶点类型
+typedef int Wtype;    //权重类型
+//定义边链表
+typedef struct edgenode
+{
+    Wtype cost;    //权重
+    int dest;    //相关联的顶点号
+    struct edgenode *link;    //下一个相关联的结点
+}EdgeNode;
+//定义顶点表
+typedef struct vertexnode
+{
+    Vtype data;    //顶点数据
+    struct EdgeNode *first;    //第一个相关联的节点
+} VertexNode;
+//定义图
+typedef struct ALGraph
+{
+    VertexNode *VertexList;
+    int numofVertex,numofEdge;
+}ALGraph;
+//初始化图
+void  Init_ALGraph(ALGraph *G)
+{
+    int i;
+    G->numofEdge=0;
+    G->numofVertex=0;
+    G->VertexList=(EdgeNode*)malloc(sizeof(EdgeNode)*MAX_VERTEX);
+    if(!G->VertexList){
+        printf("no enough space!");
+        exit(1);
+    }
+    for(i=0;i<MAX_VERTEX;i++){
+        G->VertexList[i].first=NULL;//将顶点表的边链表置空
+    }
+}
+//返回图中当前有的顶点个数
+int ALGraph_NumOfVertex(ALGraph*G)
+{
+    return G->numofVertex;
+}
+//返回图中已有的边数
+int ALGraph_NumOfEdge(ALGraph*G)
+{
+    return G->numofEdge;
+}
+//从顶点的数据中找出某个顶点的顶点号，若没找到返回-1
+int ALGraph_VertexPos(ALGraph*G,Vtype v)
+{
+    int i;
+    for(i=0;i<G->numofVertex;i++){
+        if(G->VertexList[i].data==v)
+            return i;
+    }
+    return -1;
+}
+//返回定点号i的值，若i不合理返回0
+Vtype ALGraph_ValueOfVertex(ALGraph*G,int i)
+{
+    if(i==-1)
+        return 0;
+    else
+        return G->VertexList[i].data;
+}
+//返回边（v1，v2）的权重
+Wtype ALGraph_WeightOfEdge(ALGraph*G,int v1,int v2)
+{
+    if(v1!=-1&&v2!=-1){
+        EdgeNode*p=G->VertexList[v1].first;
+        while(p!=NULL&&p->dest!=v2)
+            p=p->link;
+        if(p!=NULL)
+            return p->cost;
+
+    }
+    else
+        return 0;
+}
+//返回顶点v的第一个邻接顶点的顶点号，若无邻接顶点返回-1
+int FirstNeighbor(ALGraph*G,int v)
+{
+    if(v!=-1){
+        EdgeNode*p=G->VertexList[v].first;
+        if(NULL!=p)
+            return p->dest;
+    }
+    else
+        return -1;
+}
+
+//返回排在顶点v的邻接顶点w后的一个邻接顶点的顶点号，若无返回-1
+int NextNeighbor(ALGraph*G,int v,int w)
+{
+    if(v!=-1&&w!=-1){
+        EdgeNode* p=G->VertexList[v].first;
+        while(p!=NULL&&p->dest!=w){
+            p=p->link;
+        }
+        if(p!=NULL&&p->link!=NULL)
+            return p->link->dest;
+        else
+            return -1;
+    }
+    else
+        return -1;
+}
+//图的创建
+void ALGraph_Creat(ALGraph*G,int v,int e)
+{
+    int i,j,k;
+    Vtype v1,v2;
+    EdgeNode *q,*p;
+    Wtype weight;
+    G->numofEdge=e;
+    G->numofVertex=v;
+    //建立顶点表;
+    printf("input the vertex:\n");
+    for(i=0;i<v;i++){
+        scanf("%c",&G->VertexList[i].data);
+    }
+    i=0;
+    getchar();
+    printf("input the edge:\n");
+    while(i<e){
+        scanf("%c%c%d",&v1,&v2,&weight);
+        getchar();
+        j=ALGraph_VertexPos(G,v1);
+        k=ALGraph_VertexPos(G,v2);
+        if(j!=-1&&k!=-1){
+            p=G->VertexList[j].first;
+            while(p!=NULL&&p->dest!=k)
+                p=p->link;
+            if(p==NULL){
+                q=(EdgeNode*)malloc(sizeof(EdgeNode));
+                if(!q){
+                    printf("no enough space ");
+                    exit(1);
+                }
+                q->dest=k;
+                q->cost=weight;
+                q->link=G->VertexList[j].first;
+                G->VertexList[j].first=q;
+                q=(EdgeNode*)malloc(sizeof(EdgeNode));
+                if(!q){
+                    printf("no enough space ");
+                    exit(1);
+                }
+                q->dest=j;
+                q->cost=weight;
+                q->link=G->VertexList[k].first;
+                G->VertexList[k].first=q;
+                i++;
+            }
+            else
+                printf("边重复，请重输\n");
+        }
+        else
+            printf("两边端点信息有误，请重输\n");
+    }
+}
+//图的输出
+void Print_ALGraph(ALGraph*G)
+{
+    int i,j;
+    EdgeNode*p;
+    printf("图的顶点数是：\n");
+    printf("%d\n",G->numofVertex);
+    printf("图的边数是：\n");
+    printf("%d\n",G->numofEdge);
+    printf("顶点向量的值是：\n");
+    for(i=0;i<G->numofVertex;i++){
+        printf("%c  ",G->VertexList[i].data);
+    }
+    printf("\n图的每个顶点\n");
+    for(i=0;i<G->numofVertex;i++){
+        for(p=G->VertexList[i].first;p!=NULL;p=p->link){
+            printf("<<%d   %d    %d>>   ",i,p->dest,p->cost);
+        }
+        printf("\n");
+    }
+
+}
+//图的深度优先搜索
+void DFS(ALGraph*G,int v,int visted[])
+{
+    printf("%c\t",ALGraph_ValueOfVertex(G,v));//打印当前访问的顶点
+    visted[v]=1;
+    int w=FirstNeighbor(G,v);
+    while(w!=-1)
+    {
+        if(visted[w]==0)
+            DFS(G,w,visted);
+        w=NextNeighbor(G,v,w);
+    }
+
+}
+void DFS_Traversal(ALGraph*G,int v)
+{
+    //建立一个访问记录数组
+    int n=ALGraph_NumOfVertex(G);
+    int *visited=(int*)malloc(sizeof(int)*n);
+    int i;
+    if(!visited){
+        printf("no enough space\n");
+        exit(1);
+    }
+    for(i=0;i<G->numofVertex;i++){
+        visited[i]=0;//初始化记录数组
+    }
+    DFS(G,v,visited);
+    free(visited);
+}
+//图的广度优先搜索
+void BFS(ALGraph*G,int v)
+{
+    CircQueue Q;
+    Init_CirCqueue(&Q);
+    int i,k,w,n;
+    n=ALGraph_NumOfVertex(G);//图的顶点数
+    int* visited=(int*)malloc(sizeof(int)*n);//动态分配空间，创建一个访问记录数组
+    if(!visited){
+        printf("no enough space!");
+        exit(1);
+    }
+    for(i=0;i<n;i++)
+        visited[i]=0;//初始化记录数组
+    //访问顶点v
+    printf("%c\t",ALGraph_ValueOfVertex(G,v));
+    visited[v]=1;
+    //顶点v进队列
+    EnQueue(&Q,v);
+    while(!IsEmpty(&Q)){
+        k=DeQueue(&Q);
+        w=FirstNeighbor(G,k);
+        while(w!=-1){
+            if(visited[w]==0){
+                printf("%c\t",ALGraph_ValueOfVertex(G,w));
+                visited[w]=1;
+                EnQueue(&Q,w);
+            }
+            w=NextNeighbor(G,k,w);
+        }
+    }
+    free(visited);
+}
+int main()
+{
+    int v,e;
+    printf("input number of vertex\n");
+    scanf("%d",&v);
+    printf("input number of edge\n");
+    scanf("%d",&e);
+    getchar();
+    ALGraph G;
+    Init_ALGraph(&G);
+    ALGraph_Creat(&G,v,e);
+    Print_ALGraph(&G);
+    DFS_Traversal(&G,0);
+    printf("\n");
+    BFS(&G,0);
+    return 0;
+}
