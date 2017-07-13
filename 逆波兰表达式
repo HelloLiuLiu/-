@@ -1,0 +1,22 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+double exper()
+{
+    char a[10];
+    scanf("%s",a);
+    switch(a[0]){
+        case'+': return exper()+exper();
+        case'-': return exper()-exper();
+        case'*': return exper()*exper();
+        case'/': return exper()/exper();
+        default: return atof(a);
+    }
+}
+int main()
+{
+    double ans;
+    ans=exper();
+    printf("\n%f\n",ans);
+    return 0;
+}
