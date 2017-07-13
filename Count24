@@ -1,0 +1,70 @@
+#include <iostream>
+#include <stdio.h>
+#include <cmath>
+using namespace std;
+#define EPS 1e-6
+double a[5];
+bool iszero(double n)
+{//判段是否为零，浮点数不能用==来判断是否等于0
+   if(fabs(n)<=EPS)
+    return true;
+   else
+    return false;
+
+}
+bool count24(double a[],int n)
+{//用数组中的n个数算24
+    if(n==1){//数组中只有一个数了，就判断数组中的这个数是否为0
+        if(iszero(a[0]-24))
+            return true;
+        else
+            return false;
+    }
+    double b[5];//用来存放结果的目标数组
+    for(int i=0;i<n-1;++i)
+        for(int j=i+1;j<n;++j){//从原始数组中取出两个不同的数
+            int m=0;
+            for(int k=0;k<n;++k){//将与这两个数不同的剩下的数取出来，放到目标数组
+                if(k!=i&&k!=j)
+                    b[m++]=a[k];
+            }
+            b[m]=a[i]+a[j];//两个数相加
+            if(count24(b,n-1))//递归
+                return true;
+            b[m]=a[i]-a[j];//两个数相减
+            if(count24(b,n-1))//递归
+                return true;
+            b[m]=a[j]-a[i];
+            if(count24(b,n-1))
+                return true;
+            b[m]=a[j]*a[i];//两个数相乘
+            if(count24(b,n-1))//递归
+                return true;
+             if(!iszero(a[j])){//两个数相除，先判断分母是否为0
+                b[m]=a[i]/a[j];
+                if(count24(a,n-1))
+                    return true;
+            }
+             if(!iszero(a[i])){
+                b[m]=a[j]/a[i];
+                if(count24(a,n-1))
+                    return true;
+            }
+        }
+    return false;
+}
+int main()
+{
+    int i;
+    for(i=0;i<4;i++)
+        scanf("%lf",&a[i]);
+    do{
+    if(count24(a,4))
+        printf("yes\n");
+    else
+        printf("no\n");
+    for(i=0;i<4;i++)
+        scanf("%lf",&a[i]);
+    }while(!iszero(a[0])&&!iszero(a[1])&&!iszero(a[2])&&!iszero(a[3]));
+    return 0;
+}
